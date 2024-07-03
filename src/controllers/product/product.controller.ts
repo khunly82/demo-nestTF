@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductAddForm } from 'src/dto/product-add.form';
 import { ProductIndexDTO } from 'src/dto/product-index.dto';
@@ -57,7 +57,13 @@ export class ProductController {
     }
 
     @Delete('/:id')
-    removeProduct(@Param('id') id: number) {
+    async removeProduct(@Param('id') id: number) {
+        const product = await this.productRepository.findOne({
+            where: { id }
+        }) 
+        if(product === null) {
+            throw new NotFoundException();
+        }
         this.productRepository.delete(id)
     }
 }
