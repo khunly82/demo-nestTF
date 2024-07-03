@@ -1,5 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ProductAddForm } from 'src/dto/product-add.form';
+import { ProductIndexDTO } from 'src/dto/product-index.dto';
 import { Category } from 'src/entities/category';
 import { Product } from 'src/entities/product';
 import { Repository } from 'typeorm';
@@ -8,27 +10,54 @@ import { Repository } from 'typeorm';
 export class ProductController {
 
     constructor(
+        // classe de connection à la table produit
         @InjectRepository(Product)
-        private productRepository: Repository<Product>
+        private productRepository: Repository<Product>,
+        @InjectRepository(Category)
+        private categoryRepository: Repository<Category>
     ) {}
 
     @Get()
-    getProducts() {
+    async getProducts(@Query('category') categoryId) {
         // se connecter à la db et renvoyer les produits 
-        return this.productRepository.find({
+        // SELECT * FROM Product p
+        // JOIN Category c ON p.categoryId = c.Id
+        const products: Product[] = await this.productRepository.find({
+            where: {
+                categoryId
+            },
             relations: ['category']
         });
+
+        // transformer Product[] en  ProductIndexDTO[]
+        return products.map(p => new ProductIndexDTO(p));
     }
 
     @Post()
-    add(@Body() product: Product) {
-        product.createDate = new Date();
-        product.active = true;
-        this.productRepository.save(product);
+    async addProduct(@Body() form: ProductAddForm) {
+
+        let category = await this.categoryRepository.findOne({
+            where: { name: form.categoryName }
+        })
+
+        if(category === null) {
+            category = await this.categoryRepository.save({
+                name: form.categoryName
+            })
+        }
+
+        const product = { 
+            ...form,
+            createDate: new Date(),
+            active: true,
+            categoryId: category.id,
+        }
+
+        await this.productRepository.save(product);
     }
 
     @Delete('/:id')
-    remove(@Param('id') id: number) {
+    removeProduct(@Param('id') id: number) {
         this.productRepository.delete(id)
     }
 }

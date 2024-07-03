@@ -23,7 +23,8 @@ import { Category } from './entities/category';
       }
     }),
     TypeOrmModule.forFeature([
-      Product, Category
+      Product, 
+      Category
     ])
   ],
   controllers: [ProductController],

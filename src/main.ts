@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // activer le partage des ressourses inter origine
   app.enableCors();
 
   await app.listen(3000, () => 
