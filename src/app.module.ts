@@ -3,6 +3,8 @@ import { ProductController } from './controllers/product/product.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product';
 import { Category } from './entities/category';
+import { AuthController } from './controllers/auth/auth.controller';
+import { User } from './entities/user';
 
 @Module({
   imports: [
@@ -16,7 +18,8 @@ import { Category } from './entities/category';
       database: 'stockManager',
       entities: [
         Product, 
-        Category
+        Category,
+        User,
       ],
       options: {
         encrypt: false
@@ -24,10 +27,11 @@ import { Category } from './entities/category';
     }),
     TypeOrmModule.forFeature([
       Product, 
-      Category
+      Category,
+      User,
     ])
   ],
-  controllers: [ProductController],
+  controllers: [ProductController, AuthController],
   providers: [],
 })
 export class AppModule {}
